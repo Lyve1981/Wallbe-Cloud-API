@@ -4,6 +4,26 @@ function errorHandler(_err) {
 	console.log(_err);
 }
 
+function forFirstStation(_station, _error) {
+	request.get('charging-stations', function(_data) {
+
+		var json = JSON.parse(_data);
+		
+		var numChargingStations = json.length;
+
+		if(numChargingStations < 1) {
+			_error("Unable to find a station in response " + _data);
+		}
+		else {
+			var station = json[0];
+			_station(station.id, station);
+		}
+
+	}, function(_err) {
+		_error(_err);
+	});
+}
+
 function forEachStation(_station, _error) {
 	request.get('charging-stations', function(_data) {
 
@@ -46,8 +66,8 @@ function startCharging(_id, _success, _error) {
 	}, _error);
 }
 
-function startChargingAll(_success, _error) {
-	forEachStation(function(_id, _station) {
+function startChargingFirst(_success, _error) {
+	forFirstStation(function(_id, _station) {
 		startCharging(_id, _success, _error);
 	}, _error);
 }
@@ -55,6 +75,6 @@ function startChargingAll(_success, _error) {
 //logStations(errorHandler);
 //logChargingProcess(errorHandler);
 
-startChargingAll(function(_id) {
+startChargingFirst(function(_id) {
 	console.log("Now Charging at station with ID " + _id);
 }, errorHandler);
